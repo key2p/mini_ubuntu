@@ -46,6 +46,7 @@ debootstrap_arch_args=( )
 
 if use_qemu_static ; then
     debootstrap_arch_args+=( --arch "$PLATFORM" )
+    MIRROR_URL=http://ports.ubuntu.com/ubuntu-ports    
 fi
 
 rootfsDir=$(mktemp -d)
@@ -75,11 +76,17 @@ fi
 rootfs_chroot bash debootstrap/debootstrap --second-stage
 
 repo_url=$MIRROR_URL
+security_url=$MIRROR_URL
+
+if use_qemu_static ; then
+    security_url=http://ports.ubuntu.com/ubuntu-ports    
+fi
+
 
 echo -e "deb ${repo_url} $DIST main" > "$rootfsDir/etc/apt/sources.list"
 if [[ "$DIST" == "jammy" || "$DIST" == "noble" ]]; then
     echo "deb ${repo_url} $DIST-updates main universe" >> "$rootfsDir/etc/apt/sources.list"
-    echo "deb http://security.ubuntu.com/ubuntu $DIST-security main universe" >> "$rootfsDir/etc/apt/sources.list"
+    echo "deb ${security_url} $DIST-security main universe" >> "$rootfsDir/etc/apt/sources.list"
 fi
 
 rootfs_chroot apt-get update
