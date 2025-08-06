@@ -8,6 +8,7 @@ ROOT=$(cd "$(dirname "$0")" && pwd)
 TARGET=${1:?Specify the target filename}
 DIST=${2:-stable}
 PLATFORM=${3:-$(dpkg --print-architecture)}
+MIRROR_URL=${4:-http://archive.ubuntu.com/ubuntu}
 
 LOGFILE=${TARGET}.log
 
@@ -17,10 +18,10 @@ exec 2> >(tee -ia "$LOGFILE" >&2)
 
 DEBOOTSTRAP_DIR=$(mktemp -d)
 cp -a /usr/share/debootstrap/* "$DEBOOTSTRAP_DIR"
-cp -a /usr/share/keyrings/debian-archive-keyring.gpg "$DEBOOTSTRAP_DIR"
+cp -a /usr/share/keyrings/ubuntu-archive-keyring.gpg "$DEBOOTSTRAP_DIR"
 cp -a "${ROOT}/debootstrap/"* "${DEBOOTSTRAP_DIR}/scripts"
 
-KEYRING=$DEBOOTSTRAP_DIR/debian-archive-keyring.gpg
+KEYRING=$DEBOOTSTRAP_DIR/ubuntu-archive-keyring.gpg
 
 use_qemu_static() {
     [[ "$PLATFORM" == "arm64" && ! ( "$(uname -m)" == *arm* || "$(uname -m)" == *aarch64* ) ]]
@@ -29,11 +30,15 @@ use_qemu_static() {
 export DEBIAN_FRONTEND=noninteractive
 
 DIRS_TO_TRIM="/usr/share/man
+/usr/share/locale
+/usr/share/doc
+/usr/share/info
 /var/cache/apt
 /var/lib/apt/lists
-/usr/share/locale
+/var/lib/apt/mirrors/
 /var/log
-/usr/share/info
+/var/snap
+/var/lib/snapd
 /dev
 "
 
@@ -45,16 +50,14 @@ fi
 
 rootfsDir=$(mktemp -d)
 echo "Building base in $rootfsDir"
-DEBOOTSTRAP_DIR="$DEBOOTSTRAP_DIR" debootstrap "${debootstrap_arch_args[@]}"  --keyring "$KEYRING" --variant container --foreign "${DIST}" "$rootfsDir"
+DEBOOTSTRAP_DIR="$DEBOOTSTRAP_DIR" debootstrap "${debootstrap_arch_args[@]}"  --keyring "$KEYRING" --variant container --foreign "${DIST}" "$rootfsDir" "$MIRROR_URL"
 
 # get path to "chroot" in our current PATH
 chrootPath="$(type -P chroot)"
 rootfs_chroot() {
     # "chroot" doesn't set PATH, so we need to set it explicitly to something our new debootstrap chroot can use appropriately!
     # set PATH and chroot away!
-    PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' \
-            "$chrootPath" "$rootfsDir" "$@"
-
+    PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' "$chrootPath" "$rootfsDir" "$@"
 }
 
 if use_qemu_static ; then
@@ -71,17 +74,12 @@ fi
 
 rootfs_chroot bash debootstrap/debootstrap --second-stage
 
-repo_url="http://deb.debian.org/debian"
-sec_repo_url_1="${repo_url}-security"
-sec_repo_url_2="http://security.debian.org/debian-security"
+repo_url=$MIRROR_URL
 
 echo -e "deb ${repo_url} $DIST main" > "$rootfsDir/etc/apt/sources.list"
-if [ "$DIST" == "bookworm" ]; then
-    echo "deb ${repo_url} $DIST-updates main" >> "$rootfsDir/etc/apt/sources.list"
-    echo "deb ${sec_repo_url_1} $DIST-security main" >> "$rootfsDir/etc/apt/sources.list"
-elif [ "$DIST" == "bullseye" ]; then
-    echo "deb ${repo_url} $DIST-updates main" >> "$rootfsDir/etc/apt/sources.list"
-    echo "deb ${sec_repo_url_2} $DIST-security main" >> "$rootfsDir/etc/apt/sources.list"
+if [[ "$DIST" == "jammy" || "$DIST" == "noble" ]]; then
+    echo "deb ${repo_url} $DIST-updates main universe" >> "$rootfsDir/etc/apt/sources.list"
+    echo "deb http://security.ubuntu.com/ubuntu $DIST-security main universe" >> "$rootfsDir/etc/apt/sources.list"
 fi
 
 rootfs_chroot apt-get update
@@ -255,7 +253,7 @@ set -o pipefail
 
 echo "Trimming down"
 for DIR in $DIRS_TO_TRIM; do
-  rm -r "${rootfsDir:?rootfsDir cannot be empty}/$DIR"/*
+  rm -r "${rootfsDir:?rootfsDir cannot be empty}/$DIR"/* || true
 done
 # Remove the aux-cache as it isn't reproducible. It doesn't seem to
 # cause any problems to remove it.
