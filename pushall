@@ -7,7 +7,7 @@ set -o pipefail
 DISTS="jammy 
 noble
 "
-LATEST=trixie
+LATEST=noble
 BASENAME=key2p/minideb
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then

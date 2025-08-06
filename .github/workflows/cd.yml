@@ -9,19 +9,19 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   schedule:
-    - cron: "0 20 14 * *"
+    - cron: "0 0 14 * *"
 # Remove all permissions by default
 permissions: {}
 env:
   BASENAME: key2p/minideb
-  LATEST: trixie
+  LATEST: noble
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   shellcheck:
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
-    if: github.event_name != 'schedule' || github.repository == 'key2p/minideb'
+    if: github.event_name != 'schedule' || github.repository == 'key2p/mini_ubuntu'
     name: Shellcheck
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -53,7 +53,7 @@ jobs:
           platform: "${{ matrix.arch }}"
           is_latest: ${{ matrix.dist == env.LATEST }}
       - name: Push to DockerHUB
-        if: github.repository == 'key2p/minideb' && github.ref == 'refs/heads/ubuntu'
+        if: github.repository == 'key2p/mini_ubuntu' && github.ref == 'refs/heads/ubuntu'
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -68,7 +68,7 @@ jobs:
   deploy_manifests:
     runs-on: ubuntu-22.04
     needs: [build_multiarch]
-    if: github.repository == 'key2p/minideb' && github.ref == 'refs/heads/ubuntu'
+    if: github.repository == 'key2p/mini_ubuntu' && github.ref == 'refs/heads/ubuntu'
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
