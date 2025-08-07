@@ -1,7 +1,7 @@
 inputs:
   dist:
     description: "Dist to build"
-    default: "jammy"
+    default: "22.04"
   platform:
     description: "Platform to build"
     default: "amd64"

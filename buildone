@@ -33,7 +33,7 @@ set -e
 set -u
 set -o pipefail
 
-BASENAME=key2p/minideb
+BASENAME=key2p/ubuntu
 
 mkdir -p build
 
@@ -45,6 +45,12 @@ build() {
     DIST=$1
     PLATFORM=${2:-amd64}
     TAG=$DIST-$PLATFORM
+
+    if [ "$DIST" != "22.04" ]; then
+        DIST="jammy"
+    elif [ "$DIST" != "24.04" ]; then
+        DIST="noble"
+    fi
 
     [ -f "debootstrap/$DIST" ] || (echo "buildall: Unknown distribution: $DIST" && exit 1)
     current_ts="$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)"

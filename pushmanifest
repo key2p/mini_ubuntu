@@ -4,12 +4,12 @@ set -e
 set -u
 set -o pipefail
 
-DISTS=${DISTS:-"jammy
-noble
+DISTS=${DISTS:-"22.04
+24.04
 latest
 "}
 
-BASENAME=key2p/minideb
+BASENAME=key2p/ubuntu
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-"docker.io"}
 PLATFORMS=${PLATFORMS:-amd64 arm64}
 DRY_RUN=${DRY_RUN:-}

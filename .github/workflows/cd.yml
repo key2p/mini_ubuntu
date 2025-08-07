@@ -13,8 +13,8 @@ on:
 # Remove all permissions by default
 permissions: {}
 env:
-  BASENAME: key2p/minideb
-  LATEST: noble
+  BASENAME: key2p/ubuntu
+  LATEST: 22.04
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -39,7 +39,7 @@ jobs:
     needs: [shellcheck]
     strategy:
       matrix:
-        dist: [jammy, noble]
+        dist: ["22.04", "24.04"]
         arch: [amd64, arm64]
     name: Build ${{ matrix.dist }} on ${{ matrix.arch }}
     steps:
@@ -78,4 +78,4 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_REGISTRY: docker.io
         run: |
-          DISTS="jammy noble latest" bash pushmanifest
+          DISTS="22.04 24.04 latest" bash pushmanifest

@@ -4,11 +4,11 @@ set -e
 set -u
 set -o pipefail
 
-DISTS="jammy 
-noble
+DISTS="22.04 
+24.04
 "
-LATEST=noble
-BASENAME=key2p/minideb
+LATEST=24.04
+BASENAME=key2p/ubuntu
 
 if [ -n "${DOCKER_PASSWORD:-}" ]; then
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
@@ -34,5 +34,4 @@ for DIST in $DISTS; do
 done
 
 docker tag "${BASENAME}:${LATEST}" "${BASENAME}:latest"
-
 push latest

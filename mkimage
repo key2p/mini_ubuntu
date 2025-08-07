@@ -31,7 +31,6 @@ export DEBIAN_FRONTEND=noninteractive
 
 DIRS_TO_TRIM="/usr/share/man
 /usr/share/locale
-/usr/share/doc
 /usr/share/info
 /var/cache/apt
 /var/lib/apt/lists
