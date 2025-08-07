@@ -44,8 +44,8 @@ work_out_debs () {
     # tar as uncompressing tarballs is super common when installing things.
     # tzdata for handling timezones
     # util-linux for getopt
-    # mount is required for mounting /proc during debootstrap
-	required="adduser base-files base-passwd bash bsdutils coreutils dash ubuntu-keyring diffutils dpkg findutils grep gzip hostname init-system-helpers libc-bin login lsb-base mawk ncurses-base passwd sed tar tzdata util-linux mount e2fsprogs perl-base"
+    # mount is required for mounting /proc during debootstrap, e2fsprogs?
+	required="adduser base-files base-passwd bash bsdutils coreutils dash ubuntu-keyring diffutils dpkg findutils grep gzip hostname init-system-helpers libc-bin login lsb-base mawk ncurses-base passwd sed tar tzdata util-linux mount perl-base"
 
 	base="apt"
 

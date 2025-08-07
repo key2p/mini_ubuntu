@@ -46,9 +46,9 @@ build() {
     PLATFORM=${2:-amd64}
     TAG=$DIST-$PLATFORM
 
-    if [ "$DIST" != "22.04" ]; then
+    if [ "$DIST" == "22.04" ]; then
         DIST="jammy"
-    elif [ "$DIST" != "24.04" ]; then
+    elif [ "$DIST" == "24.04" ]; then
         DIST="noble"
     fi
 
